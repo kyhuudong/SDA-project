@@ -28,21 +28,21 @@ def csv_data(file_path):
                 city_data.append(row_split[0])     
                 file_data.append(row_split[1:len(row[0].split(';'))]) 
             i+=1
-        return city_data, year_data, file_data
+        return city_data, year_data[-8:], file_data
 
 
 
 def load_data_into_staging_tables(conn, cur, data_source, table_name):
     city_data, year_data, file_data = data_source   
     temp = []
-    year = year_data[1:]
+    year = year_data
     city = city_data
    
     #print(len(file_data))
     #print(len(city))
     try:
         for i in range(len(city)):
-            data = file_data[i]
+            data = file_data[i][-8:]
             for k in range(len(data)):
                 temp.append(city[i])
                 temp.append(year[k]) 
@@ -61,12 +61,12 @@ def load_data_into_staging_tables(conn, cur, data_source, table_name):
 def load_domain(conn, cur, data_source, table_name):
     city_data, year_data, file_data = data_source
     temp = []
-    year = year_data[1:]
+    year = year_data
     city = city_data
     checker = None
     try:
         for i in range(len(city)):
-            data = file_data[i]
+            data = file_data[i][-8:]
             for k in range(len(data)):
                 temp.append(data[k])
                 temp.append(city[i])
