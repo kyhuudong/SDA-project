@@ -1,7 +1,15 @@
 import csv
 import psycopg2
 from sql_queries import *  
+import math
+import unidecode
 
+def textTransfer(text):
+    result = text.lower()
+    result = result.replace(" ", "")
+    result = unidecode.unidecode(result)
+
+    return result
 
 def csv_data(file_path):
     row_count = 0
@@ -25,10 +33,20 @@ def csv_data(file_path):
                 row_split = row[0].split(';')
                 print(str(i-3)+'---Extracted Line')
                 #print(row) 
-                city_data.append(row_split[0])     
+                city_data.append(textTransfer(row_split[0]))     
                 file_data.append(row_split[1:len(row[0].split(';'))]) 
             i+=1
-        return city_data, year_data[-8:], file_data
+
+        # data_transfer = []
+        # file_data_transfer = []
+        # for data in file_data:
+        #     for numb in data:
+        #         data_transfer.append(str(round(float(numb)))[:2])
+        #     file_data_transfer.append(data_transfer)
+        #     data_transfer = []
+        # print(file_data_transfer)   
+
+        return city_data, year_data[-8:], file_data 
 
 
 
