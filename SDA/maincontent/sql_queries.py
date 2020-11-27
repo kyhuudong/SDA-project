@@ -19,9 +19,12 @@ FactIndustry_Table_Drop = "DROP TABLE IF EXISTS FactIndustry"
 
 #CREATE TABLE
 #Dimention
-DimCity_Table_Create = ("""CREATE TABLE IF NOT EXISTS DimCity(
-        CityID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,  
-        City VARCHAR NULL
+DimCity_Table_Create = ("""
+        CREATE SEQUENCE xxx;
+        SELECT setval('xxx', 1000);
+        CREATE TABLE IF NOT EXISTS DimCity(
+            CityID VARCHAR PRIMARY KEY DEFAULT 'vn-' || nextval('xxx') NOT NULL,  
+            City VARCHAR NULL
     );""")
 
 DimYear_Table_Create = ("""CREATE TABLE IF NOT EXISTS DimYear(
@@ -33,7 +36,7 @@ DimYear_Table_Create = ("""CREATE TABLE IF NOT EXISTS DimYear(
 ForestSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS ForestSourceDataStaging(
         Source_StagingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL, 
         City VARCHAR null,
-        CityID int null,
+        CityID VARCHAR null,
         Year int null,
         YearID int null,
         Afforestation double precision null,
@@ -43,7 +46,7 @@ ForestSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS ForestSourceDataStaging
 ClimateSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS ClimateSourceDataStaging(
         Source_StagingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL, 
         City VARCHAR null,
-        CityID int null,
+        CityID VARCHAR null,
         Year int null,
         YearID int null,
         Humidity double precision null,
@@ -54,7 +57,7 @@ ClimateSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS ClimateSourceDataStagi
 PopulationSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS PopulationSourceDataStaging(
         Source_StagingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL, 
         City VARCHAR null,
-        CityID int null,
+        CityID VARCHAR null,
         Year int null,
         YearID int null,
         Population double precision null 
@@ -64,7 +67,7 @@ PopulationSourceDataStaging = ("""CREATE TABLE IF NOT EXISTS PopulationSourceDat
 IndustrySourceDataStaging = ("""CREATE TABLE IF NOT EXISTS IndustrySourceDataStaging(
         Source_StagingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL, 
         City VARCHAR null,
-        CityID int null,
+        CityID VARCHAR null,
         Year int null,
         YearID int null,
         Industry double precision null 
@@ -75,41 +78,42 @@ IndustrySourceDataStaging = ("""CREATE TABLE IF NOT EXISTS IndustrySourceDataSta
 #FACT TABLES
 FactForest = ("""CREATE TABLE IF NOT EXISTS FactForest(
         ForestID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-        CityID int null,
+        CityID VARCHAR null,
         YearID int null,
         Afforestation double precision null,
         ForestCover double precision null,
-        FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
-        FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
+        CONSTRAINT fk_cityid_forest FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
+        CONSTRAINT fk_yearid_forest FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
+
     );""")
 
 FactClimate = ("""CREATE TABLE IF NOT EXISTS FactClimate(
         ClimateID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-        CityID int null,
+        CityID VARCHAR null,
         YearID int null,
         Humidity double precision null,
         Rainfall double precision null,
         Temperature double precision null,
-        FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
-        FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
+        CONSTRAINT fk_cityid_climate FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
+        CONSTRAINT fk_yearid_climate FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
     );""")
 
 FactPopulation = ("""CREATE TABLE IF NOT EXISTS FactPopulation(
         PopulationID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-        CityID int null,
+        CityID VARCHAR null,
         YearID int null,
         Population double precision null,
-        FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
-        FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
+        CONSTRAINT fk_cityid_population FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
+        CONSTRAINT fk_yearid_population FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
     );""")
 
 FactIndustry = ("""CREATE TABLE IF NOT EXISTS FactIndustry(
         IndustryID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
-        CityID int null,
+        CityID VARCHAR null,
         YearID int null,
         Industry double precision null,
-        FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
-        FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
+        CONSTRAINT fk_cityid_industry FOREIGN KEY (CityID) REFERENCES DimCity(CityID),
+        CONSTRAINT fk_yearid_industry FOREIGN KEY (YearID) REFERENCES DimYear(YearID)
     );""")
 
 
@@ -253,11 +257,6 @@ insert_fact_tables = ("""
         INSERT INTO FactPopulation(CityID, YearID, Population)
         SELECT CityID, YearID, Population FROM PopulationSourceDataStaging;
     """)
-
-
-
-
-
 
 
 

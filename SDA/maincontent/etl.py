@@ -8,7 +8,7 @@ def textTransfer(text):
     result = text.lower()
     result = result.replace(" ", "")
     result = unidecode.unidecode(result)
-
+    
     return result
 
 def csv_data(file_path):
@@ -33,7 +33,7 @@ def csv_data(file_path):
                 row_split = row[0].split(';')
                 print(str(i-3)+'---Extracted Line')
                 #print(row) 
-                city_data.append(textTransfer(row_split[0]))     
+                city_data.append(row_split[0])     
                 file_data.append(row_split[1:len(row[0].split(';'))]) 
             i+=1
 
@@ -118,8 +118,28 @@ def insert_table(conn, cur, dim):
         print("Insert failed")
 
 
+def transformCityId(conn, cur):
+    tranformedCity = []
+    city_transformQueries = []
+    sql = cur.execute("SELECT city FROM DimCity ;")
+    result = cur.fetchall()
+    city_list = [row[0] for row in result]   
+    for i in range(len(city_list)):
+        tranformedCity.append(textTransfer(city_list[i]))
+    for j in range(len(city_list)):
+        sql = "UPDATE dimcity SET cityid = '{}' WHERE city = '{}';".format(tranformedCity[j],city_list[j])
+        city_transformQueries.append(sql)
 
-
+    try:
+        for k in range(len(city_list)):
+            print('Transforming ---', city_list[k])
+            cur.execute(city_transformQueries[k])
+            conn.commit()
+        print("Transform successfully")
+    except psycopg2.Error as e:
+        print("Transform failed")
+        print(e)
+    
 
 def main():
     conn = psycopg2.connect("host=127.0.0.1 dbname=smartdashboard user=postgres password=846213579")
@@ -130,24 +150,43 @@ def main():
     #data_soure them csv_data o duoi va ` insert them query vao 
     data_sources = ['source_afforestation', 'source_humidity', 'source_population', 'source_industry']
     domain_sources = ['source_rainfall', 'source_temperature', 'source_forestcover']
+
+
+
+    #Loading extract and loading data into Staging Areas
     for query, data in zip(insert_table_queries, data_sources):
         load_data_into_staging_tables(conn, cur, csv_data(data), query)
     
     print('------------------------------------')
     print('------------------------------------')
     print('------------------------------------')
+
+    
+
+
     for domain_queries ,data in zip(insert_domain, domain_sources):
         load_domain(conn, cur, csv_data(data), domain_queries)
     print('------------------------------------')
     print('------------------------------------')
     print('------------------------------------')
+
+    
+    
+
+    #Load data into dimension and update staging areas
     for dim_queries in insert_tables:
-        insert_table(conn, cur, dim_queries)
+        if dim_queries == DimCity_table_insert:
+            insert_table(conn, cur, dim_queries)
+            #Transform cityID before loading into fact tables
+            transformCityId(conn, cur)
+        else:
+            insert_table(conn, cur, dim_queries)
         
+    
     cur.close() 
     conn.close()
     print('----------------DONE----------------')
-#
+
 
 if __name__ == "__main__":
     main()
