@@ -8,7 +8,9 @@ def textTransfer(text):
     result = text.lower()
     result = result.replace(" ", "")
     result = unidecode.unidecode(result)
-    
+    removeCharacter = '-.'
+    for char in removeCharacter:
+        result = result.replace(char,"")
     return result
 
 def csv_data(file_path):
